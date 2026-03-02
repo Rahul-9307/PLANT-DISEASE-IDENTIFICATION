@@ -5,19 +5,22 @@ import os
 from PIL import Image
 
 # -------------------------------------------------
-# Page Config (MUST BE FIRST STREAMLIT COMMAND)
+# PAGE CONFIG
 # -------------------------------------------------
-st.set_page_config(page_title="AgriSens - Disease Detection", layout="centered")
+st.set_page_config(
+    page_title="AgriSens - Disease Detection",
+    layout="wide",
+)
 
 # -------------------------------------------------
-# Paths
+# PATHS
 # -------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGE_PATH = os.path.join(BASE_DIR, "Diseases.png")
 MODEL_PATH = os.path.join(BASE_DIR, "trained_plant_disease_model.keras")
 
 # -------------------------------------------------
-# Load Model Only Once (Performance Boost)
+# LOAD MODEL
 # -------------------------------------------------
 @st.cache_resource
 def load_model():
@@ -26,65 +29,69 @@ def load_model():
 model = load_model()
 
 # -------------------------------------------------
-# Prediction Function
+# PREDICTION FUNCTION
 # -------------------------------------------------
 def model_prediction(test_image):
-    image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128, 128))
+    image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128,128))
     input_arr = tf.keras.preprocessing.image.img_to_array(image)
     input_arr = np.array([input_arr])
     predictions = model.predict(input_arr)
     return np.argmax(predictions)
 
 # -------------------------------------------------
-# Sidebar
+# SIDEBAR (Only Logo/Title)
 # -------------------------------------------------
 st.sidebar.title("🌾 AgriSens")
-app_mode = st.sidebar.selectbox("Select Page", ["HOME", "DISEASE RECOGNITION"])
 
 # -------------------------------------------------
-# Display Banner Image (Centered)
+# CENTER CONTENT
 # -------------------------------------------------
-if os.path.exists(IMAGE_PATH):
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
+col1, col2, col3 = st.columns([1,3,1])
+
+with col2:
+
+    # Banner
+    if os.path.exists(IMAGE_PATH):
         img = Image.open(IMAGE_PATH)
-        st.image(img)
-else:
-    st.warning("Diseases.png file not found.")
+        st.image(img, use_column_width=True)
 
-# -------------------------------------------------
-# HOME PAGE
-# -------------------------------------------------
-if app_mode == "HOME":
-    st.markdown(
-        "<h1 style='text-align: center; color: #2e8b57;'>SMART PLANT DISEASE DETECTION</h1>",
-        unsafe_allow_html=True
-    )
-    st.markdown(
-        "<p style='text-align: center;'>Upload a plant leaf image and our AI model will detect the disease.</p>",
-        unsafe_allow_html=True
-    )
+    st.markdown("<br>", unsafe_allow_html=True)
 
-# -------------------------------------------------
-# DISEASE RECOGNITION PAGE
-# -------------------------------------------------
-elif app_mode == "DISEASE RECOGNITION":
+    # Page Select (CENTER)
+    app_mode = st.selectbox("Select a Page", ["HOME", "DISEASE RECOGNITION"])
 
-    st.markdown(
-        "<h1 style='text-align: center; color: #4CAF50;'>Disease Recognition</h1>",
-        unsafe_allow_html=True
-    )
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1,2,1])
+    # HOME PAGE
+    if app_mode == "HOME":
 
-    with col2:
+        st.markdown(
+            "<h1 style='text-align: center; color: #2e8b57;'>SMART PLANT DISEASE DETECTION</h1>",
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            "<p style='text-align: center;'>Upload a plant leaf image and our AI model will detect the disease.</p>",
+            unsafe_allow_html=True
+        )
+
+    # DISEASE PAGE
+    elif app_mode == "DISEASE RECOGNITION":
+
+        st.markdown(
+            "<h1 style='text-align: center; color: #4CAF50;'>Disease Recognition</h1>",
+            unsafe_allow_html=True
+        )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
         test_image = st.file_uploader("Choose an Image of the Plant:")
 
         if test_image is not None:
             st.image(test_image, use_column_width=True)
 
             if st.button("Predict"):
-                st.snow()
+
                 result_index = model_prediction(test_image)
 
                 class_name = [
@@ -110,4 +117,4 @@ elif app_mode == "DISEASE RECOGNITION":
                     'Tomato___healthy'
                 ]
 
-                st.success(f"🌿 Model Prediction: {class_name[result_index]}")
+                st.success(f"🌿 Prediction: {class_name[result_index]}")
