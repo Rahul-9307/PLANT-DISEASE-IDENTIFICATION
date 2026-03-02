@@ -5,12 +5,20 @@ import os
 from PIL import Image
 
 # -------------------------------------------------
-# PAGE CONFIG
+# PAGE CONFIG (NO SIDEBAR)
 # -------------------------------------------------
 st.set_page_config(
     page_title="AgriSens - Disease Detection",
     layout="wide",
+    initial_sidebar_state="collapsed"
 )
+
+# Hide sidebar completely
+st.markdown("""
+<style>
+[data-testid="stSidebar"] {display: none;}
+</style>
+""", unsafe_allow_html=True)
 
 # -------------------------------------------------
 # PATHS
@@ -39,11 +47,6 @@ def model_prediction(test_image):
     return np.argmax(predictions)
 
 # -------------------------------------------------
-# SIDEBAR (Only Logo/Title)
-# -------------------------------------------------
-st.sidebar.title("🌾 AgriSens")
-
-# -------------------------------------------------
 # CENTER CONTENT
 # -------------------------------------------------
 col1, col2, col3 = st.columns([1,3,1])
@@ -57,19 +60,17 @@ with col2:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Page Select (CENTER)
+    # Page selector
     app_mode = st.selectbox("Select a Page", ["HOME", "DISEASE RECOGNITION"])
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     # HOME PAGE
     if app_mode == "HOME":
-
         st.markdown(
             "<h1 style='text-align: center; color: #2e8b57;'>SMART PLANT DISEASE DETECTION</h1>",
             unsafe_allow_html=True
         )
-
         st.markdown(
             "<p style='text-align: center;'>Upload a plant leaf image and our AI model will detect the disease.</p>",
             unsafe_allow_html=True
@@ -91,7 +92,6 @@ with col2:
             st.image(test_image, use_column_width=True)
 
             if st.button("Predict"):
-
                 result_index = model_prediction(test_image)
 
                 class_name = [
