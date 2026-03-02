@@ -16,7 +16,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Hide sidebar completely
+# Hide sidebar
 st.markdown("""
 <style>
 [data-testid="stSidebar"] {display: none;}
@@ -40,7 +40,7 @@ def load_model():
 model = load_model()
 
 # -------------------------------------------------
-# FULL 38 CLASS LIST (MATCHES MODEL)
+# FULL 38 CLASS LIST
 # -------------------------------------------------
 class_name = [
     'Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy',
@@ -66,21 +66,42 @@ class_name = [
 ]
 
 # -------------------------------------------------
-# GENERIC DISEASE INFO (WORKS FOR ALL 38)
+# DISEASE NAME TRANSLATION
 # -------------------------------------------------
-def get_disease_info(disease, language):
+disease_translation = {
+    "Squash___Powdery_mildew": {
+        "English": "Squash Powdery Mildew",
+        "Marathi": "दुधी भोपळा पिकातील भुरी रोग",
+        "Hindi": "स्क्वैश फसल में चूर्णी फफूंदी रोग"
+    },
+    "Tomato___Early_blight": {
+        "English": "Tomato Early Blight",
+        "Marathi": "टोमॅटो अर्ली ब्लाइट रोग",
+        "Hindi": "टमाटर अर्ली ब्लाइट रोग"
+    },
+    "Tomato___healthy": {
+        "English": "Tomato Plant is Healthy",
+        "Marathi": "टोमॅटो वनस्पती निरोगी आहे",
+        "Hindi": "टमाटर का पौधा स्वस्थ है"
+    }
+}
+
+# -------------------------------------------------
+# GENERIC ACTION PLAN
+# -------------------------------------------------
+def get_disease_info(language):
 
     if language == "English":
         return {
-            "description": f"{disease} detected in plant.",
-            "cause": "This disease is usually caused by fungal/bacterial infection.",
-            "prevention": "Maintain proper irrigation, spacing and field hygiene.",
+            "description": "Disease detected in plant.",
+            "cause": "Usually caused by fungal or bacterial infection.",
+            "prevention": "Maintain proper irrigation and field hygiene.",
             "treatment": "Consult agriculture expert and apply recommended fungicide."
         }
 
     elif language == "Marathi":
         return {
-            "description": f"{disease} हा रोग आढळला आहे.",
+            "description": "वनस्पतीमध्ये रोग आढळला आहे.",
             "cause": "हा रोग सहसा बुरशी किंवा जीवाणूंमुळे होतो.",
             "prevention": "योग्य पाणी व्यवस्थापन आणि स्वच्छता ठेवा.",
             "treatment": "कृषी तज्ञांचा सल्ला घ्या आणि योग्य फवारणी करा."
@@ -88,14 +109,14 @@ def get_disease_info(disease, language):
 
     else:
         return {
-            "description": f"{disease} रोग पाया गया है।",
+            "description": "पौधे में रोग पाया गया है।",
             "cause": "यह रोग आमतौर पर फंगल या बैक्टीरियल संक्रमण से होता है।",
             "prevention": "सही सिंचाई और खेत की सफाई बनाए रखें।",
             "treatment": "कृषि विशेषज्ञ से सलाह लें और उचित दवा का छिड़काव करें।"
         }
 
 # -------------------------------------------------
-# PREDICTION FUNCTION
+# PREDICTION
 # -------------------------------------------------
 def model_prediction(test_image):
     image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128,128))
@@ -109,7 +130,7 @@ def model_prediction(test_image):
     return result_index, confidence
 
 # -------------------------------------------------
-# PDF GENERATION
+# PDF
 # -------------------------------------------------
 def generate_pdf(disease, confidence, info):
     buffer = io.BytesIO()
@@ -118,7 +139,6 @@ def generate_pdf(disease, confidence, info):
     c.drawString(100, 750, "AgriSens - Plant Disease Report")
     c.drawString(100, 720, f"Disease: {disease}")
     c.drawString(100, 700, f"Confidence: {confidence:.2f}%")
-
     c.drawString(100, 670, f"Description: {info['description']}")
     c.drawString(100, 640, f"Cause: {info['cause']}")
     c.drawString(100, 610, f"Prevention: {info['prevention']}")
@@ -141,20 +161,9 @@ with col2:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    language = st.selectbox("Select Language / भाषा निवडा / भाषा चुनें",
-                            ["English", "Marathi", "Hindi"])
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    title = {
-        "English": "Disease Recognition",
-        "Marathi": "रोग ओळख प्रणाली",
-        "Hindi": "रोग पहचान प्रणाली"
-    }
-
-    st.markdown(
-        f"<h1 style='text-align:center;color:#4CAF50;'>{title[language]}</h1>",
-        unsafe_allow_html=True
+    language = st.selectbox(
+        "Select Language / भाषा निवडा / भाषा चुनें",
+        ["English", "Marathi", "Hindi"]
     )
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -169,23 +178,29 @@ with col2:
             result_index, confidence = model_prediction(test_image)
 
             if result_index < len(class_name):
-                disease_name = class_name[result_index]
+                disease_key = class_name[result_index]
             else:
-                st.error("Prediction error: Index out of range.")
+                st.error("Prediction error.")
                 st.stop()
 
-            st.success(f"Prediction: {disease_name}")
+            # Translate disease name
+            if disease_key in disease_translation:
+                display_name = disease_translation[disease_key][language]
+            else:
+                display_name = disease_key.replace("___", " ")
+
+            st.success(f"🌿 Prediction: {display_name}")
             st.info(f"Confidence: {confidence:.2f}%")
 
-            # Severity Indicator
+            # Severity
             if confidence > 85:
-                st.error("High Severity Infection Detected!")
+                st.error("High Severity Infection!")
             elif confidence > 60:
                 st.warning("Moderate Infection Level")
             else:
                 st.success("Low Infection Level")
 
-            info = get_disease_info(disease_name, language)
+            info = get_disease_info(language)
 
             st.write("### Description")
             st.write(info["description"])
@@ -199,7 +214,7 @@ with col2:
             st.write("### Treatment")
             st.write(info["treatment"])
 
-            pdf = generate_pdf(disease_name, confidence, info)
+            pdf = generate_pdf(display_name, confidence, info)
 
             st.download_button(
                 label="📄 Download Report as PDF",
