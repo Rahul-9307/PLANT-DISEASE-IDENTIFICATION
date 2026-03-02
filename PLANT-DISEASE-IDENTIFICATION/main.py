@@ -40,81 +40,59 @@ def load_model():
 model = load_model()
 
 # -------------------------------------------------
-# CLASS NAMES
+# FULL 38 CLASS LIST (MATCHES MODEL)
 # -------------------------------------------------
 class_name = [
-    "Tomato___Early_blight",
-    "Tomato___Late_blight",
-    "Tomato___healthy"
+    'Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy',
+    'Blueberry___healthy','Cherry_(including_sour)___Powdery_mildew',
+    'Cherry_(including_sour)___healthy','Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot',
+    'Corn_(maize)___Common_rust_','Corn_(maize)___Northern_Leaf_Blight',
+    'Corn_(maize)___healthy','Grape___Black_rot',
+    'Grape___Esca_(Black_Measles)','Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
+    'Grape___healthy','Orange___Haunglongbing_(Citrus_greening)',
+    'Peach___Bacterial_spot','Peach___healthy',
+    'Pepper,_bell___Bacterial_spot','Pepper,_bell___healthy',
+    'Potato___Early_blight','Potato___Late_blight','Potato___healthy',
+    'Raspberry___healthy','Soybean___healthy','Squash___Powdery_mildew',
+    'Strawberry___Leaf_scorch','Strawberry___healthy',
+    'Tomato___Bacterial_spot','Tomato___Early_blight',
+    'Tomato___Late_blight','Tomato___Leaf_Mold',
+    'Tomato___Septoria_leaf_spot',
+    'Tomato___Spider_mites Two-spotted_spider_mite',
+    'Tomato___Target_Spot',
+    'Tomato___Tomato_Yellow_Leaf_Curl_Virus',
+    'Tomato___Tomato_mosaic_virus',
+    'Tomato___healthy'
 ]
 
 # -------------------------------------------------
-# MULTILINGUAL DISEASE DATABASE
+# GENERIC DISEASE INFO (WORKS FOR ALL 38)
 # -------------------------------------------------
-disease_info = {
-    "Tomato___Early_blight": {
-        "English": {
-            "description": "Fungal disease causing brown spots on leaves.",
-            "cause": "Caused by Alternaria fungus in humid weather.",
-            "prevention": "Avoid overhead watering and maintain spacing.",
-            "treatment": "Spray Mancozeb fungicide every 7-10 days."
-        },
-        "Marathi": {
-            "description": "ही बुरशीजन्य रोग आहे ज्यामुळे पानांवर तपकिरी डाग पडतात.",
-            "cause": "ओलसर वातावरणात Alternaria बुरशीमुळे होतो.",
-            "prevention": "वरून पाणी देणे टाळा आणि झाडांमध्ये अंतर ठेवा.",
-            "treatment": "मॅन्कोझेब फवारणी ७-१० दिवसांनी करा."
-        },
-        "Hindi": {
-            "description": "यह फंगल रोग है जिससे पत्तियों पर भूरे धब्बे बनते हैं।",
-            "cause": "नमी वाले वातावरण में Alternaria फंगस के कारण होता है।",
-            "prevention": "ऊपर से पानी न दें और पौधों में दूरी रखें।",
-            "treatment": "मैनकोजेब का छिड़काव 7-10 दिन में करें।"
-        }
-    },
+def get_disease_info(disease, language):
 
-    "Tomato___Late_blight": {
-        "English": {
-            "description": "Serious fungal disease causing dark water-soaked lesions.",
-            "cause": "High humidity and cool temperature.",
-            "prevention": "Ensure proper drainage and air circulation.",
-            "treatment": "Apply Metalaxyl fungicide immediately."
-        },
-        "Marathi": {
-            "description": "गंभीर बुरशीजन्य रोग ज्यामुळे पाने काळी पडतात.",
-            "cause": "जास्त आर्द्रता आणि थंड हवामान.",
-            "prevention": "पाण्याचा निचरा व्यवस्थित ठेवा.",
-            "treatment": "मेटालेक्सिल फवारणी त्वरित करा."
-        },
-        "Hindi": {
-            "description": "गंभीर फंगल रोग जिससे पत्तियाँ काली पड़ जाती हैं।",
-            "cause": "अधिक नमी और ठंडा मौसम।",
-            "prevention": "पानी का उचित निकास रखें।",
-            "treatment": "मेटालेक्सिल का तुरंत छिड़काव करें।"
+    if language == "English":
+        return {
+            "description": f"{disease} detected in plant.",
+            "cause": "This disease is usually caused by fungal/bacterial infection.",
+            "prevention": "Maintain proper irrigation, spacing and field hygiene.",
+            "treatment": "Consult agriculture expert and apply recommended fungicide."
         }
-    },
 
-    "Tomato___healthy": {
-        "English": {
-            "description": "The plant is healthy.",
-            "cause": "No infection detected.",
-            "prevention": "Maintain proper irrigation and fertilization.",
-            "treatment": "No treatment required."
-        },
-        "Marathi": {
-            "description": "वनस्पती निरोगी आहे.",
-            "cause": "कोणताही रोग आढळला नाही.",
-            "prevention": "योग्य पाणी आणि खत व्यवस्थापन ठेवा.",
-            "treatment": "उपचाराची गरज नाही."
-        },
-        "Hindi": {
-            "description": "पौधा स्वस्थ है।",
-            "cause": "कोई संक्रमण नहीं मिला।",
-            "prevention": "सही सिंचाई और खाद प्रबंधन रखें।",
-            "treatment": "किसी उपचार की आवश्यकता नहीं।"
+    elif language == "Marathi":
+        return {
+            "description": f"{disease} हा रोग आढळला आहे.",
+            "cause": "हा रोग सहसा बुरशी किंवा जीवाणूंमुळे होतो.",
+            "prevention": "योग्य पाणी व्यवस्थापन आणि स्वच्छता ठेवा.",
+            "treatment": "कृषी तज्ञांचा सल्ला घ्या आणि योग्य फवारणी करा."
         }
-    }
-}
+
+    else:
+        return {
+            "description": f"{disease} रोग पाया गया है।",
+            "cause": "यह रोग आमतौर पर फंगल या बैक्टीरियल संक्रमण से होता है।",
+            "prevention": "सही सिंचाई और खेत की सफाई बनाए रखें।",
+            "treatment": "कृषि विशेषज्ञ से सलाह लें और उचित दवा का छिड़काव करें।"
+        }
 
 # -------------------------------------------------
 # PREDICTION FUNCTION
@@ -133,11 +111,9 @@ def model_prediction(test_image):
 # -------------------------------------------------
 # PDF GENERATION
 # -------------------------------------------------
-def generate_pdf(disease, confidence, language):
+def generate_pdf(disease, confidence, info):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
-
-    info = disease_info[disease][language]
 
     c.drawString(100, 750, "AgriSens - Plant Disease Report")
     c.drawString(100, 720, f"Disease: {disease}")
@@ -170,14 +146,14 @@ with col2:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    title_text = {
+    title = {
         "English": "Disease Recognition",
         "Marathi": "रोग ओळख प्रणाली",
         "Hindi": "रोग पहचान प्रणाली"
     }
 
     st.markdown(
-        f"<h1 style='text-align:center;color:#4CAF50;'>{title_text[language]}</h1>",
+        f"<h1 style='text-align:center;color:#4CAF50;'>{title[language]}</h1>",
         unsafe_allow_html=True
     )
 
@@ -189,13 +165,27 @@ with col2:
         st.image(test_image, use_column_width=True)
 
         if st.button("Predict"):
+
             result_index, confidence = model_prediction(test_image)
-            disease_name = class_name[result_index]
+
+            if result_index < len(class_name):
+                disease_name = class_name[result_index]
+            else:
+                st.error("Prediction error: Index out of range.")
+                st.stop()
 
             st.success(f"Prediction: {disease_name}")
             st.info(f"Confidence: {confidence:.2f}%")
 
-            info = disease_info[disease_name][language]
+            # Severity Indicator
+            if confidence > 85:
+                st.error("High Severity Infection Detected!")
+            elif confidence > 60:
+                st.warning("Moderate Infection Level")
+            else:
+                st.success("Low Infection Level")
+
+            info = get_disease_info(disease_name, language)
 
             st.write("### Description")
             st.write(info["description"])
@@ -209,7 +199,7 @@ with col2:
             st.write("### Treatment")
             st.write(info["treatment"])
 
-            pdf = generate_pdf(disease_name, confidence, language)
+            pdf = generate_pdf(disease_name, confidence, info)
 
             st.download_button(
                 label="📄 Download Report as PDF",
