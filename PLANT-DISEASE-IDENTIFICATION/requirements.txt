@@ -1,4 +1,11 @@
-streamlit
-tensorflow-cpu
-pillow
 numpy
+pickle-mixin
+streamlit
+seaborn
+pandas
+matplotlib
+scikit_learn
+tensorflow
+keras
+opencv_python_headless
+
