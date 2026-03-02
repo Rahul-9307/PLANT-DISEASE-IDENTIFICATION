@@ -21,7 +21,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Hide Sidebar
 st.markdown("""
 <style>
 [data-testid="stSidebar"] {display: none;}
@@ -107,7 +106,7 @@ def model_prediction(test_image):
     return np.argmax(predictions), np.max(predictions)*100
 
 # -------------------------------------------------
-# PREMIUM PDF DESIGN
+# PREMIUM PDF DESIGN WITH TABLE FORMAT
 # -------------------------------------------------
 def generate_pdf(disease, confidence, info):
 
@@ -118,6 +117,7 @@ def generate_pdf(disease, confidence, info):
     styles = getSampleStyleSheet()
     pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
 
+    # Title Style
     title_style = ParagraphStyle(
         name='TitleStyle',
         parent=styles['Heading1'],
@@ -146,6 +146,7 @@ def generate_pdf(disease, confidence, info):
     elements.append(header_table)
     elements.append(Spacer(1, 0.3 * inch))
 
+    # Date
     elements.append(Paragraph(f"<b>Date:</b> {datetime.now().strftime('%d-%m-%Y %H:%M')}", normal_style))
     elements.append(Spacer(1, 0.2 * inch))
 
@@ -188,25 +189,33 @@ def generate_pdf(disease, confidence, info):
     elements.append(HRFlowable(width="100%", thickness=1, color=colors.grey))
     elements.append(Spacer(1, 0.3 * inch))
 
-    # Sections
-    sections = [
-        ("Description", info["description"]),
-        ("Cause", info["cause"]),
-        ("Prevention", info["prevention"]),
-        ("Treatment", info["treatment"]),
+    # Action Plan Table
+    plan_data = [
+        ["SECTION", "DETAILS"],
+        ["Description", info["description"]],
+        ["Cause", info["cause"]],
+        ["Prevention", info["prevention"]],
+        ["Treatment", info["treatment"]],
     ]
 
-    for title, content in sections:
-        elements.append(Paragraph(f"<b>{title}</b>", normal_style))
-        elements.append(Paragraph(content, normal_style))
-        elements.append(Spacer(1, 0.3 * inch))
+    plan_table = Table(plan_data, colWidths=[120,330])
+    plan_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.darkgreen),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('GRID',(0,0),(-1,-1),1,colors.grey),
+        ('FONTNAME',(0,0),(-1,-1),"STSong-Light"),
+        ('FONTSIZE',(0,0),(-1,-1),11),
+        ('VALIGN',(0,0),(-1,-1),'TOP'),
+    ]))
+
+    elements.append(plan_table)
 
     doc.build(elements)
     buffer.seek(0)
     return buffer
 
 # -------------------------------------------------
-# UI CENTER
+# UI
 # -------------------------------------------------
 col1, col2, col3 = st.columns([1,3,1])
 
@@ -238,13 +247,6 @@ with col2:
             st.success(f"Prediction: {disease}")
             st.info(f"Confidence: {confidence:.2f}%")
 
-            if confidence > 85:
-                st.error("High Severity Infection!")
-            elif confidence > 60:
-                st.warning("Moderate Infection Level")
-            else:
-                st.success("Low Infection Level")
-
             info = get_info(language)
 
             st.write("### Description")
@@ -258,9 +260,11 @@ with col2:
 
             pdf = generate_pdf(disease, confidence, info)
 
+            file_name = f"{disease.replace(' ','_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
             st.download_button(
                 "📄 Download Report as PDF",
                 data=pdf,
-                file_name="plant_disease_report.pdf",
+                file_name=file_name,
                 mime="application/pdf"
             )
