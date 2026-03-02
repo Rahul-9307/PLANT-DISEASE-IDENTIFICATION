@@ -3,8 +3,12 @@ import tensorflow as tf
 import numpy as np
 import os
 from PIL import Image
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
 import io
 
 # -------------------------------------------------
@@ -16,7 +20,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Hide sidebar
 st.markdown("""
 <style>
 [data-testid="stSidebar"] {display: none;}
@@ -29,6 +32,7 @@ st.markdown("""
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMAGE_PATH = os.path.join(BASE_DIR, "Diseases.png")
 MODEL_PATH = os.path.join(BASE_DIR, "trained_plant_disease_model.keras")
+FONT_PATH = os.path.join(BASE_DIR, "NotoSansDevanagari-Regular.ttf")
 
 # -------------------------------------------------
 # LOAD MODEL
@@ -40,7 +44,7 @@ def load_model():
 model = load_model()
 
 # -------------------------------------------------
-# FULL 38 CLASS LIST
+# FULL 38 CLASSES
 # -------------------------------------------------
 class_name = [
     'Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy',
@@ -73,24 +77,13 @@ disease_translation = {
         "English": "Squash Powdery Mildew",
         "Marathi": "दुधी भोपळा पिकातील भुरी रोग",
         "Hindi": "स्क्वैश फसल में चूर्णी फफूंदी रोग"
-    },
-    "Tomato___Early_blight": {
-        "English": "Tomato Early Blight",
-        "Marathi": "टोमॅटो अर्ली ब्लाइट रोग",
-        "Hindi": "टमाटर अर्ली ब्लाइट रोग"
-    },
-    "Tomato___healthy": {
-        "English": "Tomato Plant is Healthy",
-        "Marathi": "टोमॅटो वनस्पती निरोगी आहे",
-        "Hindi": "टमाटर का पौधा स्वस्थ है"
     }
 }
 
 # -------------------------------------------------
 # GENERIC ACTION PLAN
 # -------------------------------------------------
-def get_disease_info(language):
-
+def get_info(language):
     if language == "English":
         return {
             "description": "Disease detected in plant.",
@@ -98,7 +91,6 @@ def get_disease_info(language):
             "prevention": "Maintain proper irrigation and field hygiene.",
             "treatment": "Consult agriculture expert and apply recommended fungicide."
         }
-
     elif language == "Marathi":
         return {
             "description": "वनस्पतीमध्ये रोग आढळला आहे.",
@@ -106,7 +98,6 @@ def get_disease_info(language):
             "prevention": "योग्य पाणी व्यवस्थापन आणि स्वच्छता ठेवा.",
             "treatment": "कृषी तज्ञांचा सल्ला घ्या आणि योग्य फवारणी करा."
         }
-
     else:
         return {
             "description": "पौधे में रोग पाया गया है।",
@@ -123,67 +114,85 @@ def model_prediction(test_image):
     input_arr = tf.keras.preprocessing.image.img_to_array(image)
     input_arr = np.array([input_arr])
     predictions = model.predict(input_arr)
-
-    result_index = np.argmax(predictions)
-    confidence = np.max(predictions) * 100
-
-    return result_index, confidence
+    return np.argmax(predictions), np.max(predictions)*100
 
 # -------------------------------------------------
-# PDF
+# ATTRACTIVE UNICODE PDF
 # -------------------------------------------------
 def generate_pdf(disease, confidence, info):
+
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
+    doc = SimpleDocTemplate(buffer)
+    elements = []
 
-    c.drawString(100, 750, "AgriSens - Plant Disease Report")
-    c.drawString(100, 720, f"Disease: {disease}")
-    c.drawString(100, 700, f"Confidence: {confidence:.2f}%")
-    c.drawString(100, 670, f"Description: {info['description']}")
-    c.drawString(100, 640, f"Cause: {info['cause']}")
-    c.drawString(100, 610, f"Prevention: {info['prevention']}")
-    c.drawString(100, 580, f"Treatment: {info['treatment']}")
+    styles = getSampleStyleSheet()
 
-    c.save()
+    # Register Unicode font
+    pdfmetrics.registerFont(TTFont("Devanagari", FONT_PATH))
+
+    normal_style = ParagraphStyle(
+        name='NormalStyle',
+        parent=styles['Normal'],
+        fontName="Devanagari",
+        fontSize=12,
+        spaceAfter=10
+    )
+
+    title_style = ParagraphStyle(
+        name='TitleStyle',
+        parent=styles['Heading1'],
+        fontName="Devanagari",
+        fontSize=18,
+        textColor=colors.green,
+        spaceAfter=20
+    )
+
+    elements.append(Paragraph("🌾 AgriSens - Plant Disease Report", title_style))
+    elements.append(Spacer(1, 0.3 * inch))
+
+    elements.append(Paragraph(f"<b>Disease:</b> {disease}", normal_style))
+    elements.append(Paragraph(f"<b>Confidence:</b> {confidence:.2f}%", normal_style))
+    elements.append(Spacer(1, 0.2 * inch))
+
+    elements.append(Paragraph(f"<b>Description:</b> {info['description']}", normal_style))
+    elements.append(Paragraph(f"<b>Cause:</b> {info['cause']}", normal_style))
+    elements.append(Paragraph(f"<b>Prevention:</b> {info['prevention']}", normal_style))
+    elements.append(Paragraph(f"<b>Treatment:</b> {info['treatment']}", normal_style))
+
+    doc.build(elements)
     buffer.seek(0)
     return buffer
 
 # -------------------------------------------------
-# CENTER LAYOUT
+# UI
 # -------------------------------------------------
 col1, col2, col3 = st.columns([1,3,1])
 
 with col2:
 
     if os.path.exists(IMAGE_PATH):
-        img = Image.open(IMAGE_PATH)
-        st.image(img, use_column_width=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
+        st.image(Image.open(IMAGE_PATH), use_column_width=True)
 
     language = st.selectbox(
         "Select Language / भाषा निवडा / भाषा चुनें",
         ["English", "Marathi", "Hindi"]
     )
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
     test_image = st.file_uploader("Upload Plant Leaf Image")
 
-    if test_image is not None:
+    if test_image:
         st.image(test_image, use_column_width=True)
 
         if st.button("Predict"):
 
-            result_index, confidence = model_prediction(test_image)
+            index, confidence = model_prediction(test_image)
 
-            if result_index < len(class_name):
-                disease_key = class_name[result_index]
+            if index < len(class_name):
+                disease_key = class_name[index]
             else:
-                st.error("Prediction error.")
+                st.error("Prediction Error")
                 st.stop()
 
-            # Translate disease name
             if disease_key in disease_translation:
                 display_name = disease_translation[disease_key][language]
             else:
@@ -200,24 +209,21 @@ with col2:
             else:
                 st.success("Low Infection Level")
 
-            info = get_disease_info(language)
+            info = get_info(language)
 
             st.write("### Description")
             st.write(info["description"])
-
             st.write("### Cause")
             st.write(info["cause"])
-
             st.write("### Prevention")
             st.write(info["prevention"])
-
             st.write("### Treatment")
             st.write(info["treatment"])
 
             pdf = generate_pdf(display_name, confidence, info)
 
             st.download_button(
-                label="📄 Download Report as PDF",
+                "📄 Download Report as PDF",
                 data=pdf,
                 file_name="plant_disease_report.pdf",
                 mime="application/pdf"
