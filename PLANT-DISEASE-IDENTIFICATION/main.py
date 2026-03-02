@@ -8,10 +8,10 @@ from reportlab.pdfgen import canvas
 import io
 
 # -------------------------------------------------
-# PAGE CONFIG (NO SIDEBAR)
+# PAGE CONFIG
 # -------------------------------------------------
 st.set_page_config(
-    page_title="AgriSens - Disease Detection",
+    page_title="AgriSens - Smart Plant Disease Detection",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -31,7 +31,7 @@ IMAGE_PATH = os.path.join(BASE_DIR, "Diseases.png")
 MODEL_PATH = os.path.join(BASE_DIR, "trained_plant_disease_model.keras")
 
 # -------------------------------------------------
-# LOAD MODEL (Cached)
+# LOAD MODEL
 # -------------------------------------------------
 @st.cache_resource
 def load_model():
@@ -43,39 +43,76 @@ model = load_model()
 # CLASS NAMES
 # -------------------------------------------------
 class_name = [
-    'Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy',
-    'Blueberry___healthy','Cherry_(including_sour)___Powdery_mildew',
-    'Cherry_(including_sour)___healthy','Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot',
-    'Corn_(maize)___Common_rust_','Corn_(maize)___Northern_Leaf_Blight',
-    'Corn_(maize)___healthy','Grape___Black_rot',
-    'Grape___Esca_(Black_Measles)','Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
-    'Grape___healthy','Orange___Haunglongbing_(Citrus_greening)',
-    'Peach___Bacterial_spot','Peach___healthy',
-    'Pepper,_bell___Bacterial_spot','Pepper,_bell___healthy',
-    'Potato___Early_blight','Potato___Late_blight','Potato___healthy',
-    'Raspberry___healthy','Soybean___healthy','Squash___Powdery_mildew',
-    'Strawberry___Leaf_scorch','Strawberry___healthy',
-    'Tomato___Bacterial_spot','Tomato___Early_blight',
-    'Tomato___Late_blight','Tomato___Leaf_Mold',
-    'Tomato___Septoria_leaf_spot',
-    'Tomato___Spider_mites Two-spotted_spider_mite',
-    'Tomato___Target_Spot',
-    'Tomato___Tomato_Yellow_Leaf_Curl_Virus',
-    'Tomato___Tomato_mosaic_virus',
-    'Tomato___healthy'
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___healthy"
 ]
 
 # -------------------------------------------------
-# DISEASE INFO (Sample – You Can Expand)
+# MULTILINGUAL DISEASE DATABASE
 # -------------------------------------------------
 disease_info = {
     "Tomato___Early_blight": {
-        "description": "Fungal disease causing brown spots on leaves.",
-        "prevention": "Use fungicide and avoid overhead watering."
+        "English": {
+            "description": "Fungal disease causing brown spots on leaves.",
+            "cause": "Caused by Alternaria fungus in humid weather.",
+            "prevention": "Avoid overhead watering and maintain spacing.",
+            "treatment": "Spray Mancozeb fungicide every 7-10 days."
+        },
+        "Marathi": {
+            "description": "ही बुरशीजन्य रोग आहे ज्यामुळे पानांवर तपकिरी डाग पडतात.",
+            "cause": "ओलसर वातावरणात Alternaria बुरशीमुळे होतो.",
+            "prevention": "वरून पाणी देणे टाळा आणि झाडांमध्ये अंतर ठेवा.",
+            "treatment": "मॅन्कोझेब फवारणी ७-१० दिवसांनी करा."
+        },
+        "Hindi": {
+            "description": "यह फंगल रोग है जिससे पत्तियों पर भूरे धब्बे बनते हैं।",
+            "cause": "नमी वाले वातावरण में Alternaria फंगस के कारण होता है।",
+            "prevention": "ऊपर से पानी न दें और पौधों में दूरी रखें।",
+            "treatment": "मैनकोजेब का छिड़काव 7-10 दिन में करें।"
+        }
     },
+
+    "Tomato___Late_blight": {
+        "English": {
+            "description": "Serious fungal disease causing dark water-soaked lesions.",
+            "cause": "High humidity and cool temperature.",
+            "prevention": "Ensure proper drainage and air circulation.",
+            "treatment": "Apply Metalaxyl fungicide immediately."
+        },
+        "Marathi": {
+            "description": "गंभीर बुरशीजन्य रोग ज्यामुळे पाने काळी पडतात.",
+            "cause": "जास्त आर्द्रता आणि थंड हवामान.",
+            "prevention": "पाण्याचा निचरा व्यवस्थित ठेवा.",
+            "treatment": "मेटालेक्सिल फवारणी त्वरित करा."
+        },
+        "Hindi": {
+            "description": "गंभीर फंगल रोग जिससे पत्तियाँ काली पड़ जाती हैं।",
+            "cause": "अधिक नमी और ठंडा मौसम।",
+            "prevention": "पानी का उचित निकास रखें।",
+            "treatment": "मेटालेक्सिल का तुरंत छिड़काव करें।"
+        }
+    },
+
     "Tomato___healthy": {
-        "description": "The plant is healthy.",
-        "prevention": "Maintain proper irrigation and fertilization."
+        "English": {
+            "description": "The plant is healthy.",
+            "cause": "No infection detected.",
+            "prevention": "Maintain proper irrigation and fertilization.",
+            "treatment": "No treatment required."
+        },
+        "Marathi": {
+            "description": "वनस्पती निरोगी आहे.",
+            "cause": "कोणताही रोग आढळला नाही.",
+            "prevention": "योग्य पाणी आणि खत व्यवस्थापन ठेवा.",
+            "treatment": "उपचाराची गरज नाही."
+        },
+        "Hindi": {
+            "description": "पौधा स्वस्थ है।",
+            "cause": "कोई संक्रमण नहीं मिला।",
+            "prevention": "सही सिंचाई और खाद प्रबंधन रखें।",
+            "treatment": "किसी उपचार की आवश्यकता नहीं।"
+        }
     }
 }
 
@@ -96,20 +133,20 @@ def model_prediction(test_image):
 # -------------------------------------------------
 # PDF GENERATION
 # -------------------------------------------------
-def generate_pdf(disease, confidence):
+def generate_pdf(disease, confidence, language):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
+
+    info = disease_info[disease][language]
 
     c.drawString(100, 750, "AgriSens - Plant Disease Report")
     c.drawString(100, 720, f"Disease: {disease}")
     c.drawString(100, 700, f"Confidence: {confidence:.2f}%")
 
-    if disease in disease_info:
-        c.drawString(100, 670, "Description:")
-        c.drawString(100, 650, disease_info[disease]["description"])
-
-        c.drawString(100, 620, "Prevention:")
-        c.drawString(100, 600, disease_info[disease]["prevention"])
+    c.drawString(100, 670, f"Description: {info['description']}")
+    c.drawString(100, 640, f"Cause: {info['cause']}")
+    c.drawString(100, 610, f"Prevention: {info['prevention']}")
+    c.drawString(100, 580, f"Treatment: {info['treatment']}")
 
     c.save()
     buffer.seek(0)
@@ -122,66 +159,61 @@ col1, col2, col3 = st.columns([1,3,1])
 
 with col2:
 
-    # Banner
     if os.path.exists(IMAGE_PATH):
         img = Image.open(IMAGE_PATH)
         st.image(img, use_column_width=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    app_mode = st.selectbox("Select a Page", ["HOME", "DISEASE RECOGNITION"])
+    language = st.selectbox("Select Language / भाषा निवडा / भाषा चुनें",
+                            ["English", "Marathi", "Hindi"])
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # HOME
-    if app_mode == "HOME":
+    title_text = {
+        "English": "Disease Recognition",
+        "Marathi": "रोग ओळख प्रणाली",
+        "Hindi": "रोग पहचान प्रणाली"
+    }
 
-        st.markdown(
-            "<h1 style='text-align: center; color: #2e8b57;'>SMART PLANT DISEASE DETECTION</h1>",
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        f"<h1 style='text-align:center;color:#4CAF50;'>{title_text[language]}</h1>",
+        unsafe_allow_html=True
+    )
 
-        st.markdown(
-            "<p style='text-align: center;'>Upload a plant leaf image and our AI model will detect the disease with confidence score and prevention tips.</p>",
-            unsafe_allow_html=True
-        )
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    # DISEASE PAGE
-    elif app_mode == "DISEASE RECOGNITION":
+    test_image = st.file_uploader("Upload Plant Leaf Image")
 
-        st.markdown(
-            "<h1 style='text-align: center; color: #4CAF50;'>Disease Recognition</h1>",
-            unsafe_allow_html=True
-        )
+    if test_image is not None:
+        st.image(test_image, use_column_width=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("Predict"):
+            result_index, confidence = model_prediction(test_image)
+            disease_name = class_name[result_index]
 
-        test_image = st.file_uploader("Choose an Image of the Plant:")
+            st.success(f"Prediction: {disease_name}")
+            st.info(f"Confidence: {confidence:.2f}%")
 
-        if test_image is not None:
-            st.image(test_image, use_column_width=True)
+            info = disease_info[disease_name][language]
 
-            if st.button("Predict"):
+            st.write("### Description")
+            st.write(info["description"])
 
-                result_index, confidence = model_prediction(test_image)
-                disease_name = class_name[result_index]
+            st.write("### Cause")
+            st.write(info["cause"])
 
-                st.success(f"🌿 Prediction: {disease_name}")
-                st.info(f"🔍 Confidence: {confidence:.2f}%")
+            st.write("### Prevention")
+            st.write(info["prevention"])
 
-                if disease_name in disease_info:
-                    st.write("### 🦠 Description")
-                    st.write(disease_info[disease_name]["description"])
+            st.write("### Treatment")
+            st.write(info["treatment"])
 
-                    st.write("### 🌱 Prevention")
-                    st.write(disease_info[disease_name]["prevention"])
+            pdf = generate_pdf(disease_name, confidence, language)
 
-                # PDF Download
-                pdf = generate_pdf(disease_name, confidence)
-
-                st.download_button(
-                    label="📄 Download Report as PDF",
-                    data=pdf,
-                    file_name="plant_disease_report.pdf",
-                    mime="application/pdf"
-                )
+            st.download_button(
+                label="📄 Download Report as PDF",
+                data=pdf,
+                file_name="plant_disease_report.pdf",
+                mime="application/pdf"
+            )
