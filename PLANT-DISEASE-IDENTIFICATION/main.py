@@ -106,7 +106,7 @@ def model_prediction(test_image):
     return np.argmax(predictions), np.max(predictions)*100
 
 # -------------------------------------------------
-# PREMIUM PDF DESIGN WITH TABLE FORMAT
+# PREMIUM PDF DESIGN
 # -------------------------------------------------
 def generate_pdf(disease, confidence, info):
 
@@ -117,17 +117,6 @@ def generate_pdf(disease, confidence, info):
     styles = getSampleStyleSheet()
     pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
 
-    # Title Style
-    title_style = ParagraphStyle(
-        name='TitleStyle',
-        parent=styles['Heading1'],
-        fontName="STSong-Light",
-        fontSize=20,
-        textColor=colors.white,
-        alignment=1,
-        spaceAfter=15
-    )
-
     normal_style = ParagraphStyle(
         name='NormalStyle',
         parent=styles['Normal'],
@@ -136,7 +125,15 @@ def generate_pdf(disease, confidence, info):
         spaceAfter=8
     )
 
-    # Header Banner
+    title_style = ParagraphStyle(
+        name='TitleStyle',
+        parent=styles['Heading1'],
+        fontName="STSong-Light",
+        fontSize=18,
+        textColor=colors.white,
+        alignment=1
+    )
+
     header = [[Paragraph("🌾 AGRISENS - PLANT DISEASE REPORT", title_style)]]
     header_table = Table(header, colWidths=[450])
     header_table.setStyle(TableStyle([
@@ -146,11 +143,9 @@ def generate_pdf(disease, confidence, info):
     elements.append(header_table)
     elements.append(Spacer(1, 0.3 * inch))
 
-    # Date
     elements.append(Paragraph(f"<b>Date:</b> {datetime.now().strftime('%d-%m-%Y %H:%M')}", normal_style))
     elements.append(Spacer(1, 0.2 * inch))
 
-    # Summary Table
     summary = [
         ["Disease", disease],
         ["Confidence", f"{confidence:.2f}%"]
@@ -162,34 +157,10 @@ def generate_pdf(disease, confidence, info):
         ('BACKGROUND',(0,0),(-1,0),colors.lightgreen),
         ('FONTNAME',(0,0),(-1,-1),"STSong-Light"),
     ]))
+
     elements.append(summary_table)
     elements.append(Spacer(1, 0.3 * inch))
 
-    # Severity
-    if confidence > 85:
-        severity = "HIGH SEVERITY INFECTION"
-        color = colors.red
-    elif confidence > 60:
-        severity = "MODERATE INFECTION"
-        color = colors.orange
-    else:
-        severity = "LOW INFECTION LEVEL"
-        color = colors.green
-
-    severity_style = ParagraphStyle(
-        name='Severity',
-        parent=styles['Heading2'],
-        fontName="STSong-Light",
-        fontSize=14,
-        textColor=color,
-        alignment=1
-    )
-
-    elements.append(Paragraph(severity, severity_style))
-    elements.append(HRFlowable(width="100%", thickness=1, color=colors.grey))
-    elements.append(Spacer(1, 0.3 * inch))
-
-    # Action Plan Table
     plan_data = [
         ["SECTION", "DETAILS"],
         ["Description", info["description"]],
@@ -215,7 +186,7 @@ def generate_pdf(disease, confidence, info):
     return buffer
 
 # -------------------------------------------------
-# UI
+# UI CENTER
 # -------------------------------------------------
 col1, col2, col3 = st.columns([1,3,1])
 
@@ -244,8 +215,37 @@ with col2:
 
             disease = class_name[index].replace("___", " ")
 
-            st.success(f"Prediction: {disease}")
-            st.info(f"Confidence: {confidence:.2f}%")
+            st.success(f"🌿 Prediction: {disease}")
+
+            # ---------------- Severity Box TOP ----------------
+            if confidence > 85:
+                severity_text = "🔴 HIGH SEVERITY INFECTION"
+                severity_color = "red"
+            elif confidence > 60:
+                severity_text = "🟠 MODERATE INFECTION LEVEL"
+                severity_color = "orange"
+            else:
+                severity_text = "🟢 LOW INFECTION LEVEL"
+                severity_color = "green"
+
+            st.markdown(
+                f"""
+                <div style='
+                    background-color:{severity_color};
+                    padding:15px;
+                    border-radius:10px;
+                    text-align:center;
+                    color:white;
+                    font-size:22px;
+                    font-weight:bold;
+                '>
+                    {severity_text}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            st.info(f"📊 Confidence: {confidence:.2f}%")
 
             info = get_info(language)
 
