@@ -165,26 +165,86 @@ col1, col2, col3 = st.columns([1,3,1])
 
 with col2:
 
-    # MULTIPLE BANNERS
-    image_list = ["Diseases.png", "d2.png", "banner3.png"]
+  # -------------------------------------------------
+# TOP BANNER 1
+# -------------------------------------------------
+img1_path = os.path.join(BASE_DIR, "Diseases.png")
 
-    for img_name in image_list:
-        img_path = os.path.join(BASE_DIR, img_name)
-        if os.path.exists(img_path):
-            st.markdown("""
-            <div style="
-                background-color:#0e1117;
-                padding:15px;
-                border-radius:15px;
-                margin-bottom:20px;
-                box-shadow:0px 4px 15px rgba(0,0,0,0.4);
-            ">
-            """, unsafe_allow_html=True)
+if os.path.exists(img1_path):
+    st.markdown("""
+    <div style="
+        background-color:#0e1117;
+        padding:15px;
+        border-radius:20px;
+        margin-bottom:30px;
+        box-shadow:0px 8px 25px rgba(0,0,0,0.6);
+    ">
+    """, unsafe_allow_html=True)
 
-            st.image(Image.open(img_path), use_column_width=True)
+    st.image(Image.open(img1_path), use_column_width=True)
 
-            st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
+
+# -------------------------------------------------
+# AGRINEXT BRAND SECTION (CENTER)
+# -------------------------------------------------
+st.markdown("""
+<div style="
+    text-align:center;
+    margin:40px 0;
+">
+    <h1 style="
+        font-size:60px;
+        font-weight:900;
+        letter-spacing:6px;
+        background: linear-gradient(90deg, #00ff88, #00ccff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom:10px;
+    ">
+        AGRINEXT
+    </h1>
+
+    <div style="
+        height:4px;
+        width:200px;
+        margin:auto;
+        background: linear-gradient(90deg,#00ff88,#00ccff);
+        border-radius:10px;
+    "></div>
+
+    <p style="
+        color:gray;
+        margin-top:15px;
+        font-size:18px;
+        letter-spacing:2px;
+    ">
+        Smart AI Powered Plant Disease Detection
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+
+# -------------------------------------------------
+# TOP BANNER 2
+# -------------------------------------------------
+img2_path = os.path.join(BASE_DIR, "banner2.png")
+
+if os.path.exists(img2_path):
+    st.markdown("""
+    <div style="
+        background-color:#0e1117;
+        padding:15px;
+        border-radius:20px;
+        margin-bottom:30px;
+        box-shadow:0px 8px 25px rgba(0,0,0,0.6);
+    ">
+    """, unsafe_allow_html=True)
+
+    st.image(Image.open(img2_path), use_column_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
     language = st.selectbox(
         "Select Language / भाषा निवडा / भाषा चुनें",
         ["English", "Marathi", "Hindi"]
@@ -246,4 +306,5 @@ with col2:
                 file_name=f"{disease}.pdf",
                 mime="application/pdf"
             )
+
 
