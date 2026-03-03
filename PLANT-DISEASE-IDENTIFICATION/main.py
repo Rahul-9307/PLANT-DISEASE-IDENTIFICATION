@@ -170,24 +170,63 @@ with col2:
     if os.path.exists(img1):
         st.image(Image.open(img1), use_column_width=True)
 
-    # AGRINEXT BRAND
-    st.markdown("""
-    <div style="text-align:center; margin:50px 0;">
+  # -------------------------------------------------
+# PREMIUM AGRINEXT BRAND SECTION
+# -------------------------------------------------
+st.markdown("""
+<div style="
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:70px 0;
+">
+
+    <div style="
+        width:100%;
+        padding:60px 40px;
+        border-radius:25px;
+        text-align:center;
+        background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,204,255,0.08));
+        backdrop-filter: blur(20px);
+        border:1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+    ">
+
         <h1 style="
-            font-size:65px;
+            font-size:72px;
             font-weight:900;
-            letter-spacing:8px;
-            background: linear-gradient(90deg, #00ff88, #00ccff);
+            letter-spacing:10px;
+            margin-bottom:20px;
+            background: linear-gradient(90deg,#00ff88,#00e0ff,#00ffcc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0px 0px 30px rgba(0,255,200,0.6);
         ">
             AGRINEXT
         </h1>
-        <p style="color:gray; font-size:18px;">
-            AI Powered Smart Plant Disease Detection
+
+        <div style="
+            height:6px;
+            width:260px;
+            margin:20px auto;
+            background: linear-gradient(90deg,#00ff88,#00e0ff);
+            border-radius:20px;
+            box-shadow: 0px 0px 20px rgba(0,255,200,0.8);
+        "></div>
+
+        <p style="
+            margin-top:25px;
+            font-size:22px;
+            color:#cfcfcf;
+            letter-spacing:2px;
+        ">
+            AI Powered Smart Plant Disease Detection System
         </p>
+
     </div>
-    """, unsafe_allow_html=True)
+
+</div>
+""", unsafe_allow_html=True)
 
     # IMAGE 2
     img2 = os.path.join(BASE_DIR, "d2.png")
@@ -249,4 +288,5 @@ with col2:
                 file_name=f"{disease}.pdf",
                 mime="application/pdf"
             )
+
 
