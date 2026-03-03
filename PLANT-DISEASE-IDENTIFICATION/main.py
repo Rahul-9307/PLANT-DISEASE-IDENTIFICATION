@@ -229,7 +229,7 @@ st.markdown("""
 # -------------------------------------------------
 # TOP BANNER 2
 # -------------------------------------------------
-img2_path = os.path.join(BASE_DIR, "banner2.png")
+img2_path = os.path.join(BASE_DIR, "d2.png")
 
 if os.path.exists(img2_path):
     st.markdown("""
@@ -306,5 +306,6 @@ if os.path.exists(img2_path):
                 file_name=f"{disease}.pdf",
                 mime="application/pdf"
             )
+
 
 
