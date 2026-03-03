@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy as np
 import os
 from PIL import Image
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.units import inch
@@ -16,7 +16,7 @@ from datetime import datetime
 # PAGE CONFIG
 # -------------------------------------------------
 st.set_page_config(
-    page_title="AgriSens - Smart Plant Disease Detection",
+    page_title="Agri🌾Next - Smart Plant Disease Detection",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -27,8 +27,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# -------------------------------------------------
+# PATHS
+# -------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-IMAGE_PATH = os.path.join(BASE_DIR, "Diseases.png")
 MODEL_PATH = os.path.join(BASE_DIR, "trained_plant_disease_model.keras")
 
 # -------------------------------------------------
@@ -41,7 +43,7 @@ def load_model():
 model = load_model()
 
 # -------------------------------------------------
-# 38 CLASSES
+# CLASS NAMES
 # -------------------------------------------------
 class_name = [
 'Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy',
@@ -73,23 +75,23 @@ def get_info(language):
     if language == "Marathi":
         return {
             "description": "वनस्पतीमध्ये रोग आढळला आहे.",
-            "cause": "हा रोग सहसा बुरशी किंवा जीवाणूंमुळे होतो.",
+            "cause": "हा रोग बुरशी किंवा जीवाणूंमुळे होतो.",
             "prevention": "योग्य पाणी व्यवस्थापन आणि स्वच्छता ठेवा.",
-            "treatment": "कृषी तज्ञांचा सल्ला घ्या आणि योग्य फवारणी करा."
+            "treatment": "कृषी तज्ञांचा सल्ला घ्या."
         }
     elif language == "Hindi":
         return {
             "description": "पौधे में रोग पाया गया है।",
-            "cause": "यह रोग आमतौर पर फंगल या बैक्टीरियल संक्रमण से होता है।",
-            "prevention": "सही सिंचाई और खेत की सफाई बनाए रखें।",
-            "treatment": "कृषि विशेषज्ञ से सलाह लें और उचित दवा का छिड़काव करें।"
+            "cause": "यह रोग फंगल या बैक्टीरियल संक्रमण से होता है।",
+            "prevention": "सही सिंचाई और खेत की सफाई रखें।",
+            "treatment": "कृषि विशेषज्ञ से सलाह लें।"
         }
     else:
         return {
             "description": "Disease detected in plant.",
             "cause": "Usually caused by fungal or bacterial infection.",
             "prevention": "Maintain proper irrigation and hygiene.",
-            "treatment": "Consult agriculture expert and apply recommended fungicide."
+            "treatment": "Consult agriculture expert."
         }
 
 # -------------------------------------------------
@@ -105,7 +107,8 @@ def model_prediction(test_image):
 # -------------------------------------------------
 # PDF GENERATOR
 # -------------------------------------------------
-def generate_pdf(disease, confidence, info, uploaded_image):
+def generate_pdf(disease, confidence, info):
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer)
     elements = []
@@ -113,138 +116,133 @@ def generate_pdf(disease, confidence, info, uploaded_image):
     styles = getSampleStyleSheet()
     pdfmetrics.registerFont(UnicodeCIDFont("STSong-Light"))
 
-    normal = ParagraphStyle(
-        name='Normal',
+    normal_style = ParagraphStyle(
+        name='NormalStyle',
         parent=styles['Normal'],
         fontName="STSong-Light",
-        fontSize=12
+        fontSize=12,
+        spaceAfter=8
     )
 
-    header = [[Paragraph("🌾 AGRISENS - PLANT DISEASE REPORT", normal)]]
-    table = Table(header, colWidths=[450])
-    table.setStyle(TableStyle([
+    header = [[Paragraph("🌾 AGRINEXT - PLANT DISEASE REPORT", normal_style)]]
+    header_table = Table(header, colWidths=[450])
+    header_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.green),
         ('TEXTCOLOR', (0,0), (-1,-1), colors.white),
-        ('ALIGN',(0,0),(-1,-1),'CENTER')
+        ('ALIGN',(0,0),(-1,-1),'CENTER'),
     ]))
-    elements.append(table)
-    elements.append(Spacer(1, 0.3 * inch))
 
-    elements.append(Paragraph(f"Date: {datetime.now().strftime('%d-%m-%Y %H:%M')}", normal))
+    elements.append(header_table)
     elements.append(Spacer(1, 0.3 * inch))
-
-    if uploaded_image:
-        img = RLImage(uploaded_image, width=4*inch, height=4*inch)
-        img.hAlign = 'CENTER'
-        elements.append(img)
-        elements.append(Spacer(1, 0.3 * inch))
 
     summary = [
+        ["Date", datetime.now().strftime('%d-%m-%Y %H:%M')],
         ["Disease", disease],
         ["Confidence", f"{confidence:.2f}%"]
     ]
 
-    summary_table = Table(summary, colWidths=[150,300])
-    summary_table.setStyle(TableStyle([
-        ('GRID',(0,0),(-1,-1),1,colors.grey)
+    table = Table(summary, colWidths=[150,300])
+    table.setStyle(TableStyle([
+        ('GRID',(0,0),(-1,-1),1,colors.grey),
+        ('FONTNAME',(0,0),(-1,-1),"STSong-Light"),
     ]))
 
-    elements.append(summary_table)
+    elements.append(table)
     elements.append(Spacer(1, 0.3 * inch))
+
+    for key, value in info.items():
+        elements.append(Paragraph(f"<b>{key.capitalize()}:</b> {value}", normal_style))
+        elements.append(Spacer(1, 0.2 * inch))
 
     doc.build(elements)
     buffer.seek(0)
     return buffer
 
 # -------------------------------------------------
-# CLEAN PROFESSIONAL HERO SECTION
+# UI CENTER
 # -------------------------------------------------
-if os.path.exists(IMAGE_PATH):
+col1, col2, col3 = st.columns([1,3,1])
 
-    col1, col2, col3 = st.columns([1,3,1])
+with col2:
 
-    with col2:
-        st.image(Image.open(IMAGE_PATH), width=650)
+    # MULTIPLE BANNERS
+    image_list = ["Diseases.png", "banner2.png", "banner3.png"]
 
-        st.markdown("""
-        <div style="text-align:center; margin-top:15px;">
-            <h1 style="
-                color:#4CAF50;
-                font-weight:700;
-                margin-bottom:5px;
+    for img_name in image_list:
+        img_path = os.path.join(BASE_DIR, img_name)
+        if os.path.exists(img_path):
+            st.markdown("""
+            <div style="
+                background-color:#0e1117;
+                padding:15px;
+                border-radius:15px;
+                margin-bottom:20px;
+                box-shadow:0px 4px 15px rgba(0,0,0,0.4);
             ">
-                🌾 AgriSens - Smart Plant Disease Detection
-            </h1>
+            """, unsafe_allow_html=True)
 
-            <p style="
-                font-size:17px;
-                color:#BBBBBB;
-            ">
-                Take Photo ➜ Upload ➜ Get Instant AI Diagnosis
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+            st.image(Image.open(img_path), use_column_width=True)
 
-        st.markdown("<hr style='margin-top:25px; margin-bottom:30px;'>", unsafe_allow_html=True)
-# -------------------------------------------------
-# MAIN SECTION
-# -------------------------------------------------
-language = st.selectbox(
-    "Select Language / भाषा निवडा / भाषा चुनें",
-    ["English", "Marathi", "Hindi"]
-)
+            st.markdown("</div>", unsafe_allow_html=True)
 
-test_image = st.file_uploader("Upload Plant Leaf Image")
+    language = st.selectbox(
+        "Select Language / भाषा निवडा / भाषा चुनें",
+        ["English", "Marathi", "Hindi"]
+    )
 
-if test_image:
-    st.image(test_image, use_column_width=True)
+    test_image = st.file_uploader("Upload Plant Leaf Image")
 
-    if st.button("Predict"):
+    if test_image:
+        st.image(test_image, use_column_width=True)
 
-        index, confidence = model_prediction(test_image)
-        disease = class_name[index].replace("___", " ")
+        if st.button("Predict"):
 
-        st.success(f"🌿 Prediction: {disease}")
+            index, confidence = model_prediction(test_image)
+            disease = class_name[index].replace("___", " ")
 
-        if confidence > 85:
-            severity_text = "🔴 HIGH SEVERITY INFECTION"
-            severity_color = "red"
-        elif confidence > 60:
-            severity_text = "🟠 MODERATE INFECTION LEVEL"
-            severity_color = "orange"
-        else:
-            severity_text = "🟢 LOW INFECTION LEVEL"
-            severity_color = "green"
+            st.success(f"🌿 Prediction: {disease}")
 
-        st.markdown(f"""
-        <div style='background-color:{severity_color};
-        padding:15px;border-radius:10px;
-        text-align:center;color:white;
-        font-size:22px;font-weight:bold;'>
-        {severity_text}
-        </div>
-        """, unsafe_allow_html=True)
+            # Severity Box
+            if confidence > 85:
+                color = "red"
+                text = "🔴 HIGH SEVERITY INFECTION"
+            elif confidence > 60:
+                color = "orange"
+                text = "🟠 MODERATE INFECTION LEVEL"
+            else:
+                color = "green"
+                text = "🟢 LOW INFECTION LEVEL"
 
-        st.info(f"📊 Confidence: {confidence:.2f}%")
+            st.markdown(f"""
+            <div style='background:{color};
+                        padding:15px;
+                        border-radius:10px;
+                        text-align:center;
+                        color:white;
+                        font-size:22px;
+                        font-weight:bold;'>
+            {text}
+            </div>
+            """, unsafe_allow_html=True)
 
-        info = get_info(language)
+            st.info(f"📊 Confidence: {confidence:.2f}%")
 
-        st.write("### Description")
-        st.write(info["description"])
-        st.write("### Cause")
-        st.write(info["cause"])
-        st.write("### Prevention")
-        st.write(info["prevention"])
-        st.write("### Treatment")
-        st.write(info["treatment"])
+            info = get_info(language)
 
-        pdf = generate_pdf(disease, confidence, info, test_image)
+            st.write("### Description")
+            st.write(info["description"])
+            st.write("### Cause")
+            st.write(info["cause"])
+            st.write("### Prevention")
+            st.write(info["prevention"])
+            st.write("### Treatment")
+            st.write(info["treatment"])
 
-        st.download_button(
-            "📄 Download Report as PDF",
-            data=pdf,
-            file_name="AgriSens_Report.pdf",
-            mime="application/pdf"
-        )
+            pdf = generate_pdf(disease, confidence, info)
 
-
+            st.download_button(
+                "📄 Download Report as PDF",
+                data=pdf,
+                file_name=f"{disease}.pdf",
+                mime="application/pdf"
+            )
