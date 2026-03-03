@@ -24,6 +24,7 @@ st.set_page_config(
 st.markdown("""
 <style>
 [data-testid="stSidebar"] {display: none;}
+body {background-color:#0e1117;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -108,7 +109,6 @@ def model_prediction(test_image):
 # PDF GENERATOR
 # -------------------------------------------------
 def generate_pdf(disease, confidence, info):
-
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer)
     elements = []
@@ -124,7 +124,7 @@ def generate_pdf(disease, confidence, info):
         spaceAfter=8
     )
 
-    header = [[Paragraph("🌾 AGRINEXT - PLANT DISEASE REPORT", normal_style)]]
+    header = [[Paragraph("AGRINEXT - PLANT DISEASE REPORT", normal_style)]]
     header_table = Table(header, colWidths=[450])
     header_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.green),
@@ -165,91 +165,39 @@ col1, col2, col3 = st.columns([1,3,1])
 
 with col2:
 
-  # -------------------------------------------------
-# TOP BANNER 1
-# -------------------------------------------------
-img1_path = os.path.join(BASE_DIR, "Diseases.png")
+    # IMAGE 1
+    img1 = os.path.join(BASE_DIR, "Diseases.png")
+    if os.path.exists(img1):
+        st.image(Image.open(img1), use_column_width=True)
 
-if os.path.exists(img1_path):
+    # AGRINEXT BRAND
     st.markdown("""
-    <div style="
-        background-color:#0e1117;
-        padding:15px;
-        border-radius:20px;
-        margin-bottom:30px;
-        box-shadow:0px 8px 25px rgba(0,0,0,0.6);
-    ">
+    <div style="text-align:center; margin:50px 0;">
+        <h1 style="
+            font-size:65px;
+            font-weight:900;
+            letter-spacing:8px;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        ">
+            AGRINEXT
+        </h1>
+        <p style="color:gray; font-size:18px;">
+            AI Powered Smart Plant Disease Detection
+        </p>
+    </div>
     """, unsafe_allow_html=True)
 
-    st.image(Image.open(img1_path), use_column_width=True)
+    # IMAGE 2
+    img2 = os.path.join(BASE_DIR, "banner2.png")
+    if os.path.exists(img2):
+        st.image(Image.open(img2), use_column_width=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    # LANGUAGE
+    language = st.selectbox("Select Language", ["English", "Marathi", "Hindi"])
 
-
-# -------------------------------------------------
-# AGRINEXT BRAND SECTION (CENTER)
-# -------------------------------------------------
-st.markdown("""
-<div style="
-    text-align:center;
-    margin:40px 0;
-">
-    <h1 style="
-        font-size:60px;
-        font-weight:900;
-        letter-spacing:6px;
-        background: linear-gradient(90deg, #00ff88, #00ccff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom:10px;
-    ">
-        AGRINEXT
-    </h1>
-
-    <div style="
-        height:4px;
-        width:200px;
-        margin:auto;
-        background: linear-gradient(90deg,#00ff88,#00ccff);
-        border-radius:10px;
-    "></div>
-
-    <p style="
-        color:gray;
-        margin-top:15px;
-        font-size:18px;
-        letter-spacing:2px;
-    ">
-        Smart AI Powered Plant Disease Detection
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
-
-# -------------------------------------------------
-# TOP BANNER 2
-# -------------------------------------------------
-img2_path = os.path.join(BASE_DIR, "d2.png")
-
-if os.path.exists(img2_path):
-    st.markdown("""
-    <div style="
-        background-color:#0e1117;
-        padding:15px;
-        border-radius:20px;
-        margin-bottom:30px;
-        box-shadow:0px 8px 25px rgba(0,0,0,0.6);
-    ">
-    """, unsafe_allow_html=True)
-
-    st.image(Image.open(img2_path), use_column_width=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-    language = st.selectbox(
-        "Select Language / भाषा निवडा / भाषा चुनें",
-        ["English", "Marathi", "Hindi"]
-    )
-
+    # UPLOAD
     test_image = st.file_uploader("Upload Plant Leaf Image")
 
     if test_image:
@@ -260,18 +208,18 @@ if os.path.exists(img2_path):
             index, confidence = model_prediction(test_image)
             disease = class_name[index].replace("___", " ")
 
-            st.success(f"🌿 Prediction: {disease}")
+            st.success(f"Prediction: {disease}")
 
-            # Severity Box
+            # Severity
             if confidence > 85:
                 color = "red"
-                text = "🔴 HIGH SEVERITY INFECTION"
+                text = "HIGH SEVERITY"
             elif confidence > 60:
                 color = "orange"
-                text = "🟠 MODERATE INFECTION LEVEL"
+                text = "MODERATE SEVERITY"
             else:
                 color = "green"
-                text = "🟢 LOW INFECTION LEVEL"
+                text = "LOW SEVERITY"
 
             st.markdown(f"""
             <div style='background:{color};
@@ -285,27 +233,19 @@ if os.path.exists(img2_path):
             </div>
             """, unsafe_allow_html=True)
 
-            st.info(f"📊 Confidence: {confidence:.2f}%")
+            st.info(f"Confidence: {confidence:.2f}%")
 
             info = get_info(language)
 
-            st.write("### Description")
-            st.write(info["description"])
-            st.write("### Cause")
-            st.write(info["cause"])
-            st.write("### Prevention")
-            st.write(info["prevention"])
-            st.write("### Treatment")
-            st.write(info["treatment"])
+            for key, value in info.items():
+                st.write(f"### {key.capitalize()}")
+                st.write(value)
 
             pdf = generate_pdf(disease, confidence, info)
 
             st.download_button(
-                "📄 Download Report as PDF",
+                "Download Report",
                 data=pdf,
                 file_name=f"{disease}.pdf",
                 mime="application/pdf"
             )
-
-
-
