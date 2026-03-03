@@ -157,29 +157,34 @@ def generate_pdf(disease, confidence, info, uploaded_image):
     return buffer
 
 # -------------------------------------------------
-# HERO SECTION
+# HERO SECTION (FIXED SIZE)
 # -------------------------------------------------
 if os.path.exists(IMAGE_PATH):
-    st.markdown("""
-    <div style="
-        background: linear-gradient(135deg,#e8f5e9,#f1f8e9);
-        padding:25px;
-        border-radius:20px;
-        box-shadow:0 8px 20px rgba(0,0,0,0.1);
-        text-align:center;
-        margin-bottom:30px;
-    ">
-    """, unsafe_allow_html=True)
 
-    st.image(Image.open(IMAGE_PATH), use_column_width=True)
+    col1, col2, col3 = st.columns([1,4,1])
 
-    st.markdown("""
-        <h1 style="color:#2e7d32;">🌾 AgriSens - Smart Plant Disease Detection</h1>
-        <p style="font-size:18px; color:#555;">
-        Take Photo ➜ Upload ➜ Get Instant AI Diagnosis
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    with col2:
+        st.markdown("""
+        <div style="
+            background: linear-gradient(135deg,#e8f5e9,#f1f8e9);
+            padding:20px;
+            border-radius:20px;
+            box-shadow:0 8px 18px rgba(0,0,0,0.1);
+            text-align:center;
+        ">
+        """, unsafe_allow_html=True)
+
+        st.image(Image.open(IMAGE_PATH), width=700)  # 👈 width control
+
+        st.markdown("""
+            <h2 style="color:#2e7d32; margin-top:15px;">
+                🌾 AgriSens - Smart Plant Disease Detection
+            </h2>
+            <p style="font-size:16px; color:#555;">
+                Take Photo ➜ Upload ➜ Get Instant AI Diagnosis
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # -------------------------------------------------
 # MAIN SECTION
@@ -241,3 +246,4 @@ if test_image:
             file_name="AgriSens_Report.pdf",
             mime="application/pdf"
         )
+
