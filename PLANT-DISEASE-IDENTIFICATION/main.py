@@ -170,39 +170,27 @@ with col2:
     if os.path.exists(img1):
         st.image(Image.open(img1), use_column_width=True)
 
-    # PREMIUM AGRINEXT SECTION
+    # AGRINEXT BRAND
     st.markdown("""
-    <div style="display:flex; justify-content:center; margin:80px 0;">
-        <div style="
-            width:100%;
-            padding:60px;
-            border-radius:25px;
-            text-align:center;
-            background: linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,204,255,0.08));
-            backdrop-filter: blur(20px);
-            border:1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+    <div style="text-align:center; margin:50px 0;">
+        <h1 style="
+            font-size:65px;
+            font-weight:900;
+            letter-spacing:8px;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         ">
-            <h1 style="
-                font-size:75px;
-                font-weight:900;
-                letter-spacing:12px;
-                background: linear-gradient(90deg,#00ff88,#00e0ff,#00ffcc);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                text-shadow: 0px 0px 30px rgba(0,255,200,0.6);
-            ">
-                AGRINEXT
-            </h1>
-            <p style="margin-top:25px; font-size:22px; color:#d0d0d0;">
-                AI Powered Smart Plant Disease Detection System
-            </p>
-        </div>
+            Agri🌾Next
+        </h1>
+        <p style="color:gray; font-size:18px;">
+            AI Powered Smart Plant Disease Detection
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
     # IMAGE 2
-    img2 = os.path.join(BASE_DIR, "banner2.png")
+    img2 = os.path.join(BASE_DIR, "d2.png")
     if os.path.exists(img2):
         st.image(Image.open(img2), use_column_width=True)
 
