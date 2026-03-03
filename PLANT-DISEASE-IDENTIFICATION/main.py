@@ -166,7 +166,7 @@ col1, col2, col3 = st.columns([1,3,1])
 with col2:
 
     # MULTIPLE BANNERS
-    image_list = ["Diseases.png", "banner2.png", "banner3.png"]
+    image_list = ["Diseases.png", "d2.png", "banner3.png"]
 
     for img_name in image_list:
         img_path = os.path.join(BASE_DIR, img_name)
@@ -246,3 +246,4 @@ with col2:
                 file_name=f"{disease}.pdf",
                 mime="application/pdf"
             )
+
