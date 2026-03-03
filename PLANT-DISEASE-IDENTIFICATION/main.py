@@ -190,7 +190,7 @@ with col2:
     """, unsafe_allow_html=True)
 
     # IMAGE 2
-    img2 = os.path.join(BASE_DIR, "banner2.png")
+    img2 = os.path.join(BASE_DIR, "d2.png")
     if os.path.exists(img2):
         st.image(Image.open(img2), use_column_width=True)
 
@@ -249,3 +249,4 @@ with col2:
                 file_name=f"{disease}.pdf",
                 mime="application/pdf"
             )
+
